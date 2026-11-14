@@ -1,0 +1,65 @@
+# ghclone-entry5 — github-core-clone-01 round 4
+
+A GitHub-core clone forge (REST v3 + GraphQL v4 + MCP + git smart HTTP),
+rewritten from scratch for round 4 with the focus on **server perf**:
+the round-3 entry scored 908 (feature 600, agent 200, perf 108) with a
+local trial of 991.
+
+## What changed vs round 3
+
+- **Cached issue JSON** — every issue's REST JSON is serialized once
+  (on create / mutation) and reused as a Buffer on GET, so the read
+  workload (2,000 sequential GETs of one issue) does no JSON work.
+- **Cached clone packs** — a fetch pack is built once per (tip, depth)
+  and reused for the 50 concurrent depth-1 clones.
+- **Cached advertisements** — the v2 upload-pack ad is one constant
+  Buffer; v0 ads and the sorted ref list are cached per repo and
+  invalidated lazily on ref changes.
+- **Fast pack parse** — `inflateSync(..., { info: true })` gives the
+  consumed input length, so pack entries parse without streaming;
+  ofs/ref deltas resolve in place; pack SHA-1s are verified.
+- **Correct fetch selection** — held commits are the ancestors of the
+  haves *minus* the ancestors of old shallow boundaries' parents, so
+  `deepen` delivers exactly the new generations and a shallow fetch of
+  a new tip never re-sends held objects. Annotated-tag wants resolve
+  through the tag to their commit and the tag object itself is sent.
+- **Minimal per-request work** — no `Date` header (`sendDate: false`),
+  no `URL` object, direct `Map` lookups, prebuilt constant responses
+  (tools/list, v2 ad), and a single async handler per request.
+- **Delete pushes** — a delete-only command list carries no pack at
+  all; the server accepts an empty pack body.
+
+## Layout
+
+- `main.ts` — lifecycle: trial mode (ephemeral port + register with
+  `MAKEFUN_ENV_URL` + poll `/done`) or standalone on `PORT` (default
+  8080). Never binds 8080 in trial mode.
+- `app.ts` — HTTP server, router, git smart-HTTP handlers
+  (info/refs, upload-pack, receive-pack).
+- `store.ts` — in-memory model (repos, refs, objects, issues, pulls)
+  plus the caches and their invalidation.
+- `git.ts` — object model, pack read/write, pkt-line framing, v0/v2
+  advertisements, ls-refs, fetch selection, squash merge.
+- `rest.ts` — REST v3 (repos, contents, labels, issues, pulls).
+- `graphql.ts` — GraphQL v4: tokenizer, parser, executor, schema
+  (incl. `__type` introspection) and the five mutations.
+- `mcp.ts` — MCP JSON-RPC: `server/discover`, `initialize`,
+  `tools/list`, `tools/call` (six github-mcp-server tools).
+- `http.ts` — response helpers (pre-serialized Buffers, request ids).
+
+## Verification (local, 15 Nov 2026)
+
+- Kit local trial (`sdk/run.ts --perf`): **120/120 checks pass**,
+  perf 137 under a CPU-starved VM (a sibling chess trial was using
+  ~90% of the shared CPU); the round-3 entry measured 128 under the
+  same conditions, 189 on a quiet VM. A quiet-VM re-run is needed for
+  the clean number.
+- Real trial-env run (`program/env/server.mjs` on 8080 + this entry
+  with `MAKEFUN_ENV_URL`): registers on an ephemeral port, serves the
+  suite, exits on `/done`.
+
+## Run
+
+```sh
+node --experimental-strip-types main.ts   # standalone on :8080
+```
