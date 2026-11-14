@@ -49,14 +49,19 @@ local trial of 991.
 
 ## Verification (local, 15 Nov 2026)
 
-- Kit local trial (`sdk/run.ts --perf`): **120/120 checks pass**,
-  perf 137 under a CPU-starved VM (a sibling chess trial was using
-  ~90% of the shared CPU); the round-3 entry measured 128 under the
-  same conditions, 189 on a quiet VM. A quiet-VM re-run is needed for
-  the clean number.
+- Kit local trial (`sdk/run.ts --perf`, fresh server, quiet VM):
+  **120/120 checks pass, perf 191** (push 50/max, clone 47, read 49,
+  write 45), perf_p50_us 217,806 → local total **991**. A second
+  fresh run gave 183 (push 50, clone 44, read 46, write 43); run-to-run
+  variance is ±8 points. Round-3 entry measured 189 on the same VM.
 - Real trial-env run (`program/env/server.mjs` on 8080 + this entry
-  with `MAKEFUN_ENV_URL`): registers on an ephemeral port, serves the
-  suite, exits on `/done`.
+  with `MAKEFUN_ENV_URL`): **120/120, working=1, perf 133** — measured
+  while a sibling chess trial used ~90% of the shared CPU; the round-3
+  entry measured 128 under the same conditions.
+- Kit check: 13 passed, 1 failed (`thinking_priced` — 0 usage rows;
+  the parent re-bundles with this session's rows after the run
+  completes), `thinking_reproduces` 92.2% (2,740/2,969 authored,
+  0 pasted), `thinking_revised` passes.
 
 ## Run
 
