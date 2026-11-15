@@ -1,5 +1,11 @@
 # ghclone-entry5 — github-core-clone-01 round 4
 
+[![make.fun · github-core-clone-01](https://make.fun/badge/github-core-clone-01.svg)](https://make.fun/bounty/github-core-clone-01?utm_source=github&utm_medium=readme&utm_campaign=github-core-clone-01)
+[![rank](https://make.fun/badge/github-core-clone-01/Zaraazye/github-core-clone/rank.svg)](https://make.fun/bounty/github-core-clone-01/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=github-core-clone-01)
+[![reward](https://make.fun/badge/github-core-clone-01/Zaraazye/github-core-clone/reward.svg)](https://make.fun/bounty/github-core-clone-01?utm_source=github&utm_medium=readme&utm_campaign=github-core-clone-01)
+
+Entry for the [make.fun github-core-clone-01 bounty](https://make.fun/bounty/github-core-clone-01) — build a GitHub-compatible git forge, $500 in USDC.
+
 A GitHub-core clone forge (REST v3 + GraphQL v4 + MCP + git smart HTTP),
 rewritten from scratch for round 4 with the focus on **server perf**:
 the round-3 entry scored 908 (feature 600, agent 200, perf 108) with a
